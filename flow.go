@@ -3,6 +3,7 @@ package conntrack
 import (
 	"fmt"
 	"net/netip"
+	"time"
 
 	"github.com/mdlayher/netlink"
 	"github.com/ti-mo/netfilter"
@@ -10,9 +11,10 @@ import (
 
 // Flow represents a snapshot of a Conntrack connection.
 type Flow struct {
-	ID        uint32
-	Timeout   uint32
-	Timestamp Timestamp
+	ID             uint32
+	Timeout        uint32
+	Timestamp      Timestamp
+	TimestampEvent time.Time
 
 	Status    Status
 	ProtoInfo ProtoInfo
@@ -108,6 +110,8 @@ func (f *Flow) unmarshal(ad *netlink.AttributeDecoder) error {
 		// (eg. if packets are seen in both directions, etc.)
 		case ctaStatus:
 			f.Status.Value = StatusFlag(ad.Uint32())
+		case ctaTimestampEvent:
+			f.TimestampEvent = time.Unix(0, int64(ad.Uint64()))
 		}
 	}
 
